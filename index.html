@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atelier de Recherche de Nom</title>
+  <style>
+    :root {
+      --primary: #758988;
+      --primary-dark: #505854;
+      --bg: #f9f4e5;
+      --text: #505854;
+      --accent: #2c3e50;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+
+    h1,
+    h2 {
+      color: var(--accent);
+      margin-top: 0.2rem;
+    }
+
+    .step {
+      display: none;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .step.active {
+      display: block;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    textarea,
+    input {
+      width: 95%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #f4ede2;
+    }
+
+    .choice {
+      display: flex;
+      padding: 0.5rem 1rem;
+      margin: 0.2rem;
+      border: 2px solid #ccc;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .choice.active {
+      background: #d4f4d7;
+      border-color: #4caf50;
+    }
+
+    button {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0.5rem 0;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    progress {
+      width: 100%;
+      height: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+
+
+    .choice-img,
+    .choice-element,
+    .choice-season {
+       display: flex !important;           /* on force flex même si .choice dit inline-block */
+  align-items: center !important;    /* centrage vertical */
+  justify-content: center !important; /* centrage horizontal */
+      width: 80px;
+      height: 80px;
+      border: 2px solid #ccc;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .choice-img.active {
+      box-shadow: 0 0 10px #4caf50;
+      transform: scale(1.1);
+    }
+
+    .choice-img img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .choice-color {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      /* Ajouts importants : */
+      display: flex;
+      /* force le comportement en ligne-bloc */
+      flex: 0 0 auto;
+      /* si placé dans un conteneur flex, empêche l’étirement */
+      box-sizing: border-box;
+      /* bordures incluses dans la taille */
+    }
+
+    .choices-img-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .choices-color-container {
+      width: 50%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+
+
+
+    .choice-color.active {
+      box-shadow: 0 0 8px #4caf50;
+      transform: scale(1.1);
+    }
+
+    @media (min-width: 600px) {
+      .choice-color {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+      }
+    }
+
+    .choice-color:hover,
+    .choice-element:hover,
+    .choice-season:hover,
+    .choice-img:hover,
+    .choice-emotion:hover {
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+    }
+
+    .choice-element img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .choice-element.active {
+      box-shadow: 0 0 8px #4caf50;
+      transform: scale(1.1);
+    }
+
+    .choices-element-container {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+
+
+    .choice-season img {
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+    }
+
+    .choice-season.active {
+      box-shadow: 0 0 10px #4caf50;
+      transform: scale(1.1);
+    }
+
+    .choices-season-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .choice-emotion {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      display: inline-block;
+      font-size: 0.9rem;
+      background-color: #fff;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+    }
+
+    .choice-emotion.active {
+      background-color: #d4f4d7;
+      border-color: #4caf50;
+      box-shadow: 0 0 8px #4caf50;
+      transform: scale(1.05);
+    }
+
+    .choices-emotion-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .choice small {
+  display: block;
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.choices-category-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
+.choices-category-column {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.choices-category-column h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.choices-category-column .choice {
+  margin-bottom: 0.4rem;
+}
+
+.choice {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  margin: 0.2rem 0;
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.choice:hover {
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.choice.active {
+  background-color: #d4f4d7;
+  border-color: #4caf50;
+  transform: scale(1.05);
+}
+
+.choice-container {
+
+  border-bottom: #aaa6a6 2px solid;
+  padding: 20px 20px;
+  margin-bottom: 1.5rem;
+}
+
+.choices-category-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: space-between;
+}
+
+.choices-category-column {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.choices-category-column h4 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.choice {
+  display: inline-block;
+
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.choice:hover {
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+.choice.active {
+  background-color: #d4f4d7;
+  border-color: #4caf50;
+  transform: scale(1.05);
+}
+
+.choice-brand {
+  font-style: italic;
+}
+
+.big-choice {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  margin-bottom: 1rem;
+  border: 2px solid #4caf50;
+  border-radius: 20px;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .choices-category-container {
+    flex-direction: column;
+  }
+  .choices-category-column {
+    flex: 1 1 100%;
+  }
+}
+
+
+/* UNIQUEMENT pour la section d’images inspiration (maçonnerie douce) */
+.choices-img-masonry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.choices-img-masonry .choice-img {
+  flex: 1 1 calc(45% - 1rem);  /* 2 colonnes */
+  max-width: calc(45% - 1rem);
+  height: auto;
+  border-radius: 12px;
+}
+
+@media (min-width: 700px) {
+  .choices-img-masonry .choice-img {
+    flex: 1 1 calc(30% - 1rem);  /* 3 colonnes sur écran large */
+    max-width: calc(30% - 1rem);
+  }
+}
+
+.choices-img-masonry .choice-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+
+
+
+  </style>
+</head>
+
+<body>
+  <h1>🛠️ Atelier de Recherche de Nom</h1>
+  <progress id="progress" value="0" max="100"></progress>
+
+  <form id="namingForm">
+
+    <!----------------------- EMOTIONS & IMAGES ------------------------------->
+    <!------------------------------STEP 1------------------------------------->
+   <div class="step active">
+  <h2>1️⃣ Émotions et images</h2>
+
+  <p>🌟 Prenez un instant pour rêver à ce que vous voulez transmettre à travers votre futur nom.</p>
+
+  <p>💭 Imaginez que le nom murmure une sensation au creux de l’oreille...</p>
+<div class="choices-emotion-container">
+  <div class="choice choice-emotion" data-label="légèreté" onclick="addToTextarea('emotions', 'légèreté')">légèreté</div>
+  <div class="choice choice-emotion" data-label="douceur" onclick="addToTextarea('emotions', 'douceur')">douceur</div>
+  <div class="choice choice-emotion" data-label="énergie" onclick="addToTextarea('emotions', 'énergie')">énergie</div>
+  <div class="choice choice-emotion" data-label="apaisement" onclick="addToTextarea('emotions', 'apaisement')">apaisement</div>
+  <div class="choice choice-emotion" data-label="force" onclick="addToTextarea('emotions', 'force')">force</div>
+  <div class="choice choice-emotion" data-label="sérénité" onclick="addToTextarea('emotions', 'sérénité')">sérénité</div>
+  <div class="choice choice-emotion" data-label="mouvement" onclick="addToTextarea('emotions', 'mouvement')">mouvement</div>
+  <div class="choice choice-emotion" data-label="lumière" onclick="addToTextarea('emotions', 'lumière')">lumière</div>
+  <div class="choice choice-emotion" data-label="chaleur" onclick="addToTextarea('emotions', 'chaleur')">chaleur</div>
+  <div class="choice choice-emotion" data-label="ancrage" onclick="addToTextarea('emotions', 'ancrage')">ancrage</div>
+  <div class="choice choice-emotion" data-label="liberté" onclick="addToTextarea('emotions', 'liberté')">liberté</div>
+</div>
+<textarea name="emotions" id="emotions" placeholder="légèreté, force, sérénité…"></textarea>
+
+<p>🎨 Et qu’est-ce qui ferait que ce nom soit profondément le vôtre ?</p>
+<div class="choices-emotion-container">
+  <div class="choice choice-emotion" data-label="authenticité" onclick="addToTextarea('ressemblance', 'authenticité')">authenticité</div>
+  <div class="choice choice-emotion" data-label="créativité" onclick="addToTextarea('ressemblance', 'créativité')">créativité</div>
+  <div class="choice choice-emotion" data-label="courage" onclick="addToTextarea('ressemblance', 'courage')">courage</div>
+  <div class="choice choice-emotion" data-label="épanouissement" onclick="addToTextarea('ressemblance', 'épanouissement')">épanouissement</div>
+  <div class="choice choice-emotion" data-label="harmonie" onclick="addToTextarea('ressemblance', 'harmonie')">harmonie</div>
+  <div class="choice choice-emotion" data-label="curiosité" onclick="addToTextarea('ressemblance', 'curiosité')">curiosité</div>
+  <div class="choice choice-emotion" data-label="générosité" onclick="addToTextarea('ressemblance', 'générosité')">générosité</div>
+  <div class="choice choice-emotion" data-label="résilience" onclick="addToTextarea('ressemblance', 'résilience')">résilience</div>
+  <div class="choice choice-emotion" data-label="transformation" onclick="addToTextarea('ressemblance', 'transformation')">transformation</div>
+  <div class="choice choice-emotion" data-label="connexion" onclick="addToTextarea('ressemblance', 'connexion')">connexion</div>
+  <div class="choice choice-emotion" data-label="originalité" onclick="addToTextarea('ressemblance', 'originalité')">originalité</div>
+  <div class="choice choice-emotion" data-label="passion" onclick="addToTextarea('ressemblance', 'passion')">passion</div>
+  <div class="choice choice-emotion" data-label="intuition" onclick="addToTextarea('ressemblance', 'intuition')">intuition</div>
+</div>
+<textarea name="ressemblance" id="ressemblance" placeholder="ce qui vous rend unique, vos valeurs…"></textarea>
+<small><em>Pas besoin d’une réponse parfaite. On affinera ensemble !</em></small><br>
+
+  <button type="button" onclick="nextStep()">Suivant</button>
+  </div>  
+<!----------------------- ASSOCIATIONS LIBRES ------------------------------->
+<!------------------------------STEP 2------------------------------------->
+    <div class="step">
+      <h2>2️⃣ Associations libres</h2>
+      <p>🎲 Petit jeu d’association libre : imaginez votre activité comme si elle était un être vivant, une couleur, un
+        élément de la nature…</p>
+      <!-------------------- STEP - ANIMAUX ---------------------->
+      <p>🐾 Si c’était un animal…</p>
+      <div class="choices-img-container">
+        <div class="choice choice-img" data-label="renard" onclick="selectChoice(this, 'animal')">
+          <img src="images/renard@2x.webp" alt="renard">
+        </div>
+        <div class="choice choice-img" data-label="dauphin" onclick="selectChoice(this, 'animal')">
+          <img src="images/dauphin@2x.webp" alt="dauphin">
+        </div>
+
+        <div class="choice choice-img" data-label="oiseau" onclick="selectChoice(this, 'animal')">
+          <img src="images/oiseau@2x.webp" alt="oiseau">
+        </div>
+        <div class="choice choice-img" data-label="chat" onclick="selectChoice(this, 'animal')">
+          <img src="images/chat@2x.webp" alt="chat">
+        </div>
+        <div class="choice choice-img" data-label="tortue" onclick="selectChoice(this, 'animal')">
+          <img src="images/tortue@2x.webp" alt="tortue">
+        </div>
+        <div class="choice choice-img" data-label="cheval" onclick="selectChoice(this, 'animal')">
+          <img src="images/cheval@2x.webp" alt="cheval">
+        </div>
+        <div class="choice choice-img" data-label="ours" onclick="selectChoice(this, 'animal')">
+          <img src="images/ours@2x.webp" alt="ours">
+        </div>
+        <div class="choice choice-img" data-label="éléphant" onclick="selectChoice(this, 'animal')">
+          <img src="images/elephant@2x.webp" alt="éléphant">
+        </div>
+        <div class="choice choice-img" data-label="cerf" onclick="selectChoice(this, 'animal')">
+          <img src="images/cerf@2x.webp" alt="cerf">
+        </div>
+        <div class="choice choice-img" data-label="loup" onclick="selectChoice(this, 'animal')">
+          <img src="images/loup@2x.webp" alt="loup">
+        </div>
+      </div>
+
+      <input name="animal" id="animal" placeholder="ou écrivez votre idée…">
+
+      <!-------------------- STEP - INSECTES SYMBOLES ---------------------->
+      <h2>2️⃣ bis – Insectes symboliques</h2>
+      <p>🦋 Petit jeu : si votre activité était un insecte, lequel représenterait le mieux son énergie ?</p>
+      <div class="choices-img-container">
+        <div class="choice choice-img" data-label="papillon" onclick="selectChoice(this, 'insecte')">
+          <img src="images/papillon@2x.webp" alt="papillon">
+        </div>
+        <div class="choice choice-img" data-label="abeille" onclick="selectChoice(this, 'insecte')">
+          <img src="images/abeille@2x.webp" alt="abeille">
+        </div>
+        <div class="choice choice-img" data-label="libellule" onclick="selectChoice(this, 'insecte')">
+          <img src="images/libellule@2x.webp" alt="libellule">
+        </div>
+        <div class="choice choice-img" data-label="sauterelle" onclick="selectChoice(this, 'insecte')">
+          <img src="images/sauterelle@2x.webp" alt="sauterelle">
+        </div>
+        <div class="choice choice-img" data-label="fourmi" onclick="selectChoice(this, 'insecte')">
+          <img src="images/fourmi@2x.webp" alt="fourmi">
+        </div>
+        <div class="choice choice-img" data-label="scarabee" onclick="selectChoice(this, 'insecte')">
+          <img src="images/scarabee@2x.webp" alt="scarabee">
+        </div>
+        <div class="choice choice-img" data-label="coccinelle" onclick="selectChoice(this, 'insecte')">
+          <img src="images/coccinelle@2x.webp" alt="coccinelle">
+        </div>
+        <div class="choice choice-img" data-label="menthe-religieuse" onclick="selectChoice(this, 'insecte')">
+          <img src="images/menthe-religieuse@2x.webp" alt="menthe-religieuse">
+        </div>
+        <div class="choice choice-img" data-label="luciole" onclick="selectChoice(this, 'insecte')">
+          <img src="images/luciole@2x.webp" alt="luciole">
+        </div>
+        <div class="choice choice-img" data-label="araignee" onclick="selectChoice(this, 'insecte')">
+          <img src="images/araignee@2x.webp" alt="araignee">
+        </div>
+
+        <input name="insecte" id="insecte" placeholder="ou écrivez votre idée…">
+
+          <!-------------------- STEP - COULEURS ---------------------->
+          <p>🎨 Si c’était une couleur…</p>
+          <div class="choices-color-container">
+            <!-- Famille : Bleus -->
+
+            <div class="choice choice-color" data-label="bleu ciel" title="Bleu ciel" style="background-color: #87CEEB;"
+              onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="turquoise" title="Turquoise" style="background-color: #40E0D0;"
+              onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="bleu nuit" title="Bleu nuit" style="background-color: #191970;"
+              onclick="selectChoice(this, 'couleur')"></div>
+
+
+            <!-- Famille : Verts -->
+
+            <div class="choice choice-color" data-label="vert tendre" title="Vert tendre"
+              style="background-color: #90EE90;" onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="vert forêt" title="Vert forêt"
+              style="background-color: #228B22;" onclick="selectChoice(this, 'couleur')"></div>
+
+
+            <!-- Famille : Jaunes / Dorés -->
+
+            <div class="choice choice-color" data-label="doré" title="Doré" style="background-color: #FFD700;"
+              onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="jaune doux" title="Jaune doux"
+              style="background-color: #FFFACD;" onclick="selectChoice(this, 'couleur')"></div>
+
+
+            <!-- Famille : Roses / Rouges -->
+
+            <div class="choice choice-color" data-label="rose pâle" title="Rose pâle" style="background-color: #FFB6C1;"
+              onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="corail" title="Corail" style="background-color: #FF7F50;"
+              onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="rouge brique" title="Rouge brique"
+              style="background-color: #B22222;" onclick="selectChoice(this, 'couleur')"></div>
+
+
+            <!-- Famille : Neutres -->
+
+            <div class="choice choice-color" data-label="gris perle" title="Gris perle"
+              style="background-color: #D3D3D3;" onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="beige doux" title="Beige doux"
+              style="background-color: #F5F5DC;" onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="blanc pur" title="Blanc pur" style="background-color: #FFFFFF;"
+              onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="noir profond" title="Noir profond"
+              style="background-color: #000000;" onclick="selectChoice(this, 'couleur')"></div>
+            <div class="choice choice-color" data-label="argenté" title="Argenté" style="background-color: #C0C0C0;"
+              onclick="selectChoice(this, 'couleur')"></div>
+
+          </div>
+
+          <!-- Champ libre -->
+          <input name="couleur" id="couleur" placeholder="ou écrivez votre idée…">
+
+        </div>
+
+        <!-------------------- STEP - ELEMENTS ---------------------->
+        <div>
+          <p>🌟 Si c’était un élément…</p>
+          <div class="choices-element-container">
+            <div class="choice choice-element" data-label="eau" onclick="selectChoice(this, 'element')">
+              <img src="images/leau@2x.webp" alt="Eau" title="Eau">
+            </div>
+            <div class="choice choice-element" data-label="feu" onclick="selectChoice(this, 'element')">
+              <img src="images/lefeu@2x.webp" alt="Feu" title="Feu">
+            </div>
+            <div class="choice choice-element" data-label="air" onclick="selectChoice(this, 'element')">
+              <img src="images/lair@2x.webp" alt="Air" title="Air">
+            </div>
+            <div class="choice choice-element" data-label="terre" onclick="selectChoice(this, 'element')">
+              <img src="images/terre@2x.webp" alt="Terre" title="Terre">
+            </div>
+          </div>
+
+
+          <input name="element" id="element" placeholder="ou écrivez votre idée…">
+
+          <!-------------------- STEP - SAISONS ---------------------->
+          <p>🍂 Si c’était une saison…</p>
+          <div class="choices-season-container">
+            <div class="choice choice-season" data-label="printemps" onclick="selectChoice(this, 'saison')"
+              title="Printemps">
+              <img src="images/printemps@2x.webp" alt="Printemps">
+            </div>
+            <div class="choice choice-season" data-label="été" onclick="selectChoice(this, 'saison')" title="Été">
+              <img src="images/ete@2x.webp" alt="Été">
+            </div>
+            <div class="choice choice-season" data-label="automne" onclick="selectChoice(this, 'saison')"
+              title="Automne">
+              <img src="images/automne@2x.webp" alt="Automne">
+            </div>
+            <div class="choice choice-season" data-label="hiver" onclick="selectChoice(this, 'saison')" title="Hiver">
+              <img src="images/hivers@2x.webp" alt="Hiver">
+            </div>
+          </div>
+
+          <input name="saison" id="saison" placeholder="ou écrivez votre idée…">
+
+
+          <p>💖 Un mot-clé émotionnel qui l’incarne…</p>
+          <div class="choices-emotion-container">
+            <div class="choice choice-emotion" data-label="joie" onclick="selectChoice(this, 'mot_emotion')">joie</div>
+            <div class="choice choice-emotion" data-label="apaisement" onclick="selectChoice(this, 'mot_emotion')">
+              apaisement</div>
+            <div class="choice choice-emotion" data-label="légèreté" onclick="selectChoice(this, 'mot_emotion')">
+              légèreté</div>
+            <div class="choice choice-emotion" data-label="confiance" onclick="selectChoice(this, 'mot_emotion')">
+              confiance</div>
+            <div class="choice choice-emotion" data-label="énergie" onclick="selectChoice(this, 'mot_emotion')">énergie
+            </div>
+            <div class="choice choice-emotion" data-label="douceur" onclick="selectChoice(this, 'mot_emotion')">douceur
+            </div>
+            <div class="choice choice-emotion" data-label="créativité" onclick="selectChoice(this, 'mot_emotion')">
+              créativité</div>
+            <div class="choice choice-emotion" data-label="ancrage" onclick="selectChoice(this, 'mot_emotion')">ancrage
+            </div>
+            <div class="choice choice-emotion" data-label="expansion" onclick="selectChoice(this, 'mot_emotion')">
+              expansion</div>
+            <div class="choice choice-emotion" data-label="liberté" onclick="selectChoice(this, 'mot_emotion')">liberté
+            </div>
+          </div>
+
+          <input name="mot_emotion" id="mot_emotion" placeholder="ou écrivez votre idée…">
+
+
+        </div>
+        <button type="button" onclick="prevStep()">Précédent</button>
+        <button type="button" onclick="nextStep()">Suivant</button>
+</div>
+<!----------------------- INSPIRATION LINGUISTIQUE ------------------------->
+<!------------------------------STEP 3------------------------------------->   
+<div class="step">
+  <h2>3️⃣ Inspirations de mots et marques</h2>
+  <p>✨ Parmi ces styles et exemples, qu’est-ce qui vous inspire ? Cliquez ce qui vous attire.</p>
+
+  <!-- 1️⃣ Simple & clair -->
+ <div class="choice-container">
+  <div class="choice big-choice" data-label="Simple & clair" onclick="selectChoice(this, 'inspirations')">✨ Simple & clair</div>
+  
+  <div class="choices-category-container">
+    <!-- Colonne Exemples -->
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="souffle" onclick="selectChoice(this, 'inspirations')">souffle</div>
+      <div class="choice" data-label="lumière" onclick="selectChoice(this, 'inspirations')">lumière</div>
+      <div class="choice" data-label="cœur" onclick="selectChoice(this, 'inspirations')">cœur</div>
+      <div class="choice" data-label="source" onclick="selectChoice(this, 'inspirations')">source</div>
+      <div class="choice" data-label="clarté" onclick="selectChoice(this, 'inspirations')">clarté</div>
+      <div class="choice" data-label="essence" onclick="selectChoice(this, 'inspirations')">essence</div>
+      <div class="choice" data-label="justesse" onclick="selectChoice(this, 'inspirations')">justesse</div>
+    </div>
+
+    <!-- Colonne Marques -->
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="L'Oréal" onclick="selectChoice(this, 'inspirations')">L'Oréal</div>
+      <div class="choice choice-brand" data-label="Nature & Découvertes" onclick="selectChoice(this, 'inspirations')">Nature & Découvertes</div>
+      <div class="choice choice-brand" data-label="Aesop" onclick="selectChoice(this, 'inspirations')">Aesop</div>
+      <div class="choice choice-brand" data-label="Slow" onclick="selectChoice(this, 'inspirations')">Slow</div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 2️⃣ Poétique & imagé -->
+ <div class="choice-container">
+  <div class="choice big-choice" data-label="Poétique & imagé" onclick="selectChoice(this, 'inspirations')">🌸 Poétique & imagé</div>
+  <div class="choices-category-container">
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="élan" onclick="selectChoice(this, 'inspirations')">élan</div>
+      <div class="choice" data-label="brise" onclick="selectChoice(this, 'inspirations')">brise</div>
+      <div class="choice" data-label="clair de lune" onclick="selectChoice(this, 'inspirations')">clair de lune</div>
+      <div class="choice" data-label="étoile" onclick="selectChoice(this, 'inspirations')">étoile</div>
+      <div class="choice" data-label="plume" onclick="selectChoice(this, 'inspirations')">plume</div>
+      <div class="choice" data-label="vague" onclick="selectChoice(this, 'inspirations')">vague</div>
+      <div class="choice" data-label="murmure" onclick="selectChoice(this, 'inspirations')">murmure</div>
+    </div>
+
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="Petit Bateau" onclick="selectChoice(this, 'inspirations')">Petit Bateau</div>
+      <div class="choice choice-brand" data-label="Clair de Lune" onclick="selectChoice(this, 'inspirations')">Clair de Lune</div>
+      <div class="choice choice-brand" data-label="L'Occitane" onclick="selectChoice(this, 'inspirations')">L'Occitane</div>
+      <div class="choice choice-brand" data-label="L'Artisan Parfumeur" onclick="selectChoice(this, 'inspirations')">L'Artisan Parfumeur</div>
+    </div>
+  </div>
+</div>
+
+  <!-- 3️⃣ Dynamique & audacieux -->
+  <div class="choice-container">
+  <div class="choice big-choice" data-label="Dynamique & audacieux" onclick="selectChoice(this, 'inspirations')">⚡ Dynamique & audacieux</div>
+  
+  <div class="choices-category-container">
+    <!-- Colonne Exemples -->
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="pulsion" onclick="selectChoice(this, 'inspirations')">pulsion</div>
+      <div class="choice" data-label="élan" onclick="selectChoice(this, 'inspirations')">élan</div>
+      <div class="choice" data-label="impact" onclick="selectChoice(this, 'inspirations')">impact</div>
+      <div class="choice" data-label="feu" onclick="selectChoice(this, 'inspirations')">feu</div>
+      <div class="choice" data-label="frisson" onclick="selectChoice(this, 'inspirations')">frisson</div>
+      <div class="choice" data-label="tempo" onclick="selectChoice(this, 'inspirations')">tempo</div>
+      <div class="choice" data-label="zest" onclick="selectChoice(this, 'inspirations')">zest</div>
+    </div>
+
+    <!-- Colonne Marques -->
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="Red Bull" onclick="selectChoice(this, 'inspirations')">Red Bull</div>
+      <div class="choice choice-brand" data-label="Nike" onclick="selectChoice(this, 'inspirations')">Nike</div>
+      <div class="choice choice-brand" data-label="GoPro" onclick="selectChoice(this, 'inspirations')">GoPro</div>
+      <div class="choice choice-brand" data-label="Vans" onclick="selectChoice(this, 'inspirations')">Vans</div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 4️⃣ Minimaliste & moderne -->
+  <div class="choice-container">
+  <div class="choice big-choice" data-label="Minimaliste & moderne" onclick="selectChoice(this, 'inspirations')">🎯 Minimaliste & moderne</div>
+  
+  <div class="choices-category-container">
+    <!-- Colonne Exemples -->
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="point" onclick="selectChoice(this, 'inspirations')">point</div>
+      <div class="choice" data-label="ligne" onclick="selectChoice(this, 'inspirations')">ligne</div>
+      <div class="choice" data-label="pixel" onclick="selectChoice(this, 'inspirations')">pixel</div>
+      <div class="choice" data-label="cube" onclick="selectChoice(this, 'inspirations')">cube</div>
+      <div class="choice" data-label="forme" onclick="selectChoice(this, 'inspirations')">forme</div>
+      <div class="choice" data-label="code" onclick="selectChoice(this, 'inspirations')">code</div>
+      <div class="choice" data-label="flux" onclick="selectChoice(this, 'inspirations')">flux</div>
+    </div>
+
+    <!-- Colonne Marques -->
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="Apple" onclick="selectChoice(this, 'inspirations')">Apple</div>
+      <div class="choice choice-brand" data-label="Muji" onclick="selectChoice(this, 'inspirations')">Muji</div>
+      <div class="choice choice-brand" data-label="Ikea" onclick="selectChoice(this, 'inspirations')">Ikea</div>
+      <div class="choice choice-brand" data-label="COS" onclick="selectChoice(this, 'inspirations')">COS</div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 5️⃣ Éthique & engagé -->
+ <div class="choice-container">
+  <div class="choice big-choice" data-label="Éthique & engagé" onclick="selectChoice(this, 'inspirations')">🌱 Éthique & engagé</div>
+
+  <div class="choices-category-container">
+    <!-- Colonne Exemples -->
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="racine" onclick="selectChoice(this, 'inspirations')">racine</div>
+      <div class="choice" data-label="main" onclick="selectChoice(this, 'inspirations')">main</div>
+      <div class="choice" data-label="terre" onclick="selectChoice(this, 'inspirations')">terre</div>
+      <div class="choice" data-label="conscience" onclick="selectChoice(this, 'inspirations')">conscience</div>
+      <div class="choice" data-label="engagement" onclick="selectChoice(this, 'inspirations')">engagement</div>
+      <div class="choice" data-label="solidarité" onclick="selectChoice(this, 'inspirations')">solidarité</div>
+      <div class="choice" data-label="impact" onclick="selectChoice(this, 'inspirations')">impact</div>
+    </div>
+
+    <!-- Colonne Marques -->
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="Patagonia" onclick="selectChoice(this, 'inspirations')">Patagonia</div>
+      <div class="choice choice-brand" data-label="Biocoop" onclick="selectChoice(this, 'inspirations')">Biocoop</div>
+      <div class="choice choice-brand" data-label="Veja" onclick="selectChoice(this, 'inspirations')">Veja</div>
+      <div class="choice choice-brand" data-label="Faguo" onclick="selectChoice(this, 'inspirations')">Faguo</div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 6️⃣ Élégant & raffiné -->
+ <div class="choice-container">
+  <div class="choice big-choice" data-label="Élégant & raffiné" onclick="selectChoice(this, 'inspirations')">💎 Élégant & raffiné</div>
+
+  <div class="choices-category-container">
+    <!-- Colonne Exemples -->
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="perle" onclick="selectChoice(this, 'inspirations')">perle</div>
+      <div class="choice" data-label="satin" onclick="selectChoice(this, 'inspirations')">satin</div>
+      <div class="choice" data-label="velours" onclick="selectChoice(this, 'inspirations')">velours</div>
+      <div class="choice" data-label="nacre" onclick="selectChoice(this, 'inspirations')">nacre</div>
+      <div class="choice" data-label="élégance" onclick="selectChoice(this, 'inspirations')">élégance</div>
+      <div class="choice" data-label="prestige" onclick="selectChoice(this, 'inspirations')">prestige</div>
+      <div class="choice" data-label="raffinement" onclick="selectChoice(this, 'inspirations')">raffinement</div>
+    </div>
+
+    <!-- Colonne Marques -->
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="Chanel" onclick="selectChoice(this, 'inspirations')">Chanel</div>
+      <div class="choice choice-brand" data-label="Dior" onclick="selectChoice(this, 'inspirations')">Dior</div>
+      <div class="choice choice-brand" data-label="Hermès" onclick="selectChoice(this, 'inspirations')">Hermès</div>
+      <div class="choice choice-brand" data-label="Cartier" onclick="selectChoice(this, 'inspirations')">Cartier</div>
+    </div>
+  </div>
+</div>
+
+  <!-- 7️⃣ Ludique & joyeux -->
+  <div class="choice-container">
+  <div class="choice big-choice" data-label="Ludique & joyeux" onclick="selectChoice(this, 'inspirations')">🎉 Ludique & joyeux</div>
+
+  <div class="choices-category-container">
+    <!-- Colonne Exemples -->
+    <div class="choices-category-column">
+      <h4>Exemples</h4>
+      <div class="choice" data-label="pep’s" onclick="selectChoice(this, 'inspirations')">pep’s</div>
+      <div class="choice" data-label="sourire" onclick="selectChoice(this, 'inspirations')">sourire</div>
+      <div class="choice" data-label="danse" onclick="selectChoice(this, 'inspirations')">danse</div>
+      <div class="choice" data-label="bulles" onclick="selectChoice(this, 'inspirations')">bulles</div>
+      <div class="choice" data-label="fête" onclick="selectChoice(this, 'inspirations')">fête</div>
+      <div class="choice" data-label="joie" onclick="selectChoice(this, 'inspirations')">joie</div>
+      <div class="choice" data-label="rire" onclick="selectChoice(this, 'inspirations')">rire</div>
+    </div>
+
+    <!-- Colonne Marques -->
+    <div class="choices-category-column">
+      <h4>Marques</h4>
+      <div class="choice choice-brand" data-label="Innocent" onclick="selectChoice(this, 'inspirations')">Innocent</div>
+      <div class="choice choice-brand" data-label="Haribo" onclick="selectChoice(this, 'inspirations')">Haribo</div>
+      <div class="choice choice-brand" data-label="Ben & Jerry's" onclick="selectChoice(this, 'inspirations')">Ben & Jerry's</div>
+      <div class="choice choice-brand" data-label="Play-Doh" onclick="selectChoice(this, 'inspirations')">Play-Doh</div>
+    </div>
+  </div>
+</div>
+
+<!-- Champ libre -->
+  <textarea name="inspirations" id="inspirations" placeholder="Vous avez d’autres idées ou inspirations ? Notez-les ici…"></textarea>
+
+  <button type="button" onclick="prevStep()">Précédent</button>
+  <button type="button" onclick="nextStep()">Suivant</button>
+</div>
+
+
+
+
+<!----------------------- FORMATS DE NOM ------------------------->
+<!------------------------------STEP 4------------------------------------->
+     <div class="step">
+  <h2>4️⃣ Formats de nom</h2>
+  <p>📦 Quel type de nom vous attire ? Cliquez pour sélectionner.</p>
+
+  <div class="choices-category-container">
+    <!-- Descriptif -->
+    <div class="choices-category-column">
+      <h4>📝 Descriptif</h4>
+      <div class="choice" data-label="Nom descriptif" onclick="selectChoice(this, 'formats')">ex. Maison du Bien-Être</div>
+      <div class="choice" data-label="Nom métier" onclick="selectChoice(this, 'formats')">ex. Atelier Thérapie</div>
+    </div>
+
+    <!-- Imaginaire / Évocateur -->
+    <div class="choices-category-column">
+      <h4>💫 Imaginaire / Évocateur</h4>
+      <div class="choice" data-label="Nom poétique" onclick="selectChoice(this, 'formats')">ex. Souffle d’Étoile</div>
+      <div class="choice" data-label="Nom évocateur" onclick="selectChoice(this, 'formats')">ex. Plume Sauvage</div>
+    </div>
+
+    <!-- Inventé -->
+    <div class="choices-category-column">
+      <h4>✨ Inventé</h4>
+      <div class="choice" data-label="Nom inventé" onclick="selectChoice(this, 'formats')">ex. Zénika</div>
+      <div class="choice" data-label="Nom hybride" onclick="selectChoice(this, 'formats')">ex. Thérapulse</div>
+    </div>
+
+    <!-- Basé sur prénom/nom -->
+    <div class="choices-category-column">
+      <h4>🔠 Prénom/Nom</h4>
+      <div class="choice" data-label="Prénom seul" onclick="selectChoice(this, 'formats')">ex. Aline</div>
+      <div class="choice" data-label="Prénom + métier" onclick="selectChoice(this, 'formats')">ex. Aline Énergie</div>
+    </div>
+  </div>
+
+  <!-- Champ libre -->
+  <textarea name="formats" id="formats" placeholder="Vous avez une idée précise ou un mélange de styles ? Notez-le ici…"></textarea>
+
+  <button type="button" onclick="prevStep()">Précédent</button>
+  <button type="button" onclick="nextStep()">Suivant</button>
+</div>
+
+<!----------------------- CONTRAINTES PRATIQUES ------------------------->
+<!------------------------------STEP 5------------------------------------->
+        <div class="step">
+  <h2>5️⃣ Contraintes pratiques</h2>
+  <p>🔧 Pour affiner votre nom, quelles contraintes pratiques sont importantes pour vous ?</p>
+
+  <div class="choices-category-container">
+    <!-- Longueur -->
+    <div class="choices-category-column">
+      <h4>📏 Longueur</h4>
+      <div class="choice" data-label="Court" onclick="selectChoice(this, 'longueur')">Court</div>
+      <div class="choice" data-label="Moyen" onclick="selectChoice(this, 'longueur')">Moyen</div>
+      <div class="choice" data-label="Long" onclick="selectChoice(this, 'longueur')">Long</div>
+    </div>
+
+    <!-- Facilité -->
+    <div class="choices-category-column">
+      <h4>🗣️ Facilité</h4>
+      <div class="choice" data-label="Facile à écrire" onclick="selectChoice(this, 'facile')">Facile à écrire</div>
+      <div class="choice" data-label="Facile à prononcer" onclick="selectChoice(this, 'facile')">Facile à prononcer</div>
+      <div class="choice" data-label="Facile à retenir" onclick="selectChoice(this, 'facile')">Facile à retenir</div>
+    </div>
+
+    <!-- Portée -->
+    <div class="choices-category-column">
+      <h4>🌍 Portée</h4>
+      <div class="choice" data-label="Compréhensible en français" onclick="selectChoice(this, 'international')">Compréhensible en français</div>
+      <div class="choice" data-label="International" onclick="selectChoice(this, 'international')">International</div>
+    </div>
+  </div>
+
+  <!-- Champs libres -->
+  <textarea name="longueur" id="longueur" placeholder="Commentaires sur la longueur…"></textarea>
+  <textarea name="facile" id="facile" placeholder="Commentaires sur la facilité…"></textarea>
+  <textarea name="international" id="international" placeholder="Commentaires sur la portée…"></textarea>
+
+  <button type="button" onclick="prevStep()">Précédent</button>
+  <button type="button" onclick="nextStep()">Suivant</button>
+</div>
+
+<!----------------------- PHRASE INSPIRATION PERSO ------------------------->
+<!------------------------------STEP 6------------------------------------->
+       <div class="step">
+        <div>
+  <h2>🧒 Phrase poétique pour enfant</h2>
+  <p>💬 Imaginez une petite phrase douce, légère ou rigolote que vous pourriez dire à un enfant pour expliquer votre activité.</p>
+  
+  <div class="choices-emotion-container">
+    <div class="choice" onclick="addToTextarea('phrase_enfant', 'Je fais chanter le corps')">Je fais chanter le corps</div>
+    <div class="choice" onclick="addToTextarea('phrase_enfant', 'Je fais danser les émotions')">Je fais danser les émotions</div>
+    <div class="choice" onclick="addToTextarea('phrase_enfant', 'Je dénoue les petits nœuds invisibles')">Je dénoue les petits nœuds invisibles</div>
+    <div class="choice" onclick="addToTextarea('phrase_enfant', 'Je fais voler les soucis comme des bulles')">Je fais voler les soucis comme des bulles</div>
+    <div class="choice" onclick="addToTextarea('phrase_enfant', 'Je sème de la joie dans le cœur')">Je sème de la joie dans le cœur</div>
+  </div>
+
+  <textarea name="phrase_enfant" id="phrase_enfant" placeholder="Ex: Je fais chanter le corps pour qu’il soit heureux..."></textarea>
+
+  <small><em>👉 Vous pouvez cliquer sur les propositions pour les ajouter, ou écrire la vôtre !</em></small><br>
+
+  
+</div>
+
+<!-----OBJET OU FORME PERSONNELLE -------->
+
+<div>
+  <h2>🏡 Objet ou forme personnelle</h2>
+  <p>Chez vous, y a-t-il un objet, une forme, une couleur à laquelle vous tenez ? Quelque chose qui vous accompagne, qui vous apaise ou vous inspire ?</p>
+  
+  <div class="choices-emotion-container">
+    <div class="choice choice-emotion" data-label="carnet" onclick="addToTextarea('objet_attachement', 'carnet')">📓 carnet</div>
+    <div class="choice choice-emotion" data-label="pierre" onclick="addToTextarea('objet_attachement', 'pierre')">🌿 pierre</div>
+    <div class="choice choice-emotion" data-label="bougie" onclick="addToTextarea('objet_attachement', 'bougie')">🕯️ bougie</div>
+    <div class="choice choice-emotion" data-label="tasse" onclick="addToTextarea('objet_attachement', 'tasse')">☕ tasse</div>
+    <div class="choice choice-emotion" data-label="plante" onclick="addToTextarea('objet_attachement', 'plante')">🌱 plante</div>
+    <div class="choice choice-emotion" data-label="bijou" onclick="addToTextarea('objet_attachement', 'bijou')">💍 bijou</div>
+    <div class="choice choice-emotion" data-label="meuble ancien" onclick="addToTextarea('objet_attachement', 'meuble ancien')">🪑 meuble ancien</div>
+  </div>
+
+  <textarea name="objet_attachement" id="objet_attachement" placeholder="Décrivez votre objet, sa forme, sa couleur, son histoire…"></textarea>
+</div>
+
+<div>
+  <h2>🛤️ Souvenir ou moment inspirant</h2>
+  <p>Y a-t-il un souvenir, une phrase, une chanson, une odeur, un moment qui vous inspire particulièrement ? Quelque chose qui touche votre cœur ?</p>
+  
+  <div class="choices-emotion-container">
+    <div class="choice choice-emotion" data-label="berceuse" onclick="addToTextarea('souvenir_inspirant', 'berceuse')">🎶 berceuse</div>
+    <div class="choice choice-emotion" data-label="phrase de grand-mère" onclick="addToTextarea('souvenir_inspirant', 'phrase de grand-mère')">💬 phrase de grand-mère</div>
+    <div class="choice choice-emotion" data-label="coucher de soleil" onclick="addToTextarea('souvenir_inspirant', 'coucher de soleil')">🌅 coucher de soleil</div>
+    <div class="choice choice-emotion" data-label="odeur de forêt" onclick="addToTextarea('souvenir_inspirant', 'odeur de forêt')">🌲 odeur de forêt</div>
+    <div class="choice choice-emotion" data-label="parfum de cuisine" onclick="addToTextarea('souvenir_inspirant', 'parfum de cuisine')">🍲 parfum de cuisine</div>
+  </div>
+
+  <textarea name="souvenir_inspirant" id="souvenir_inspirant" placeholder="Racontez un souvenir ou un moment qui vous inspire…"></textarea>
+  
+</div>
+
+
+
+<button type="button" onclick="prevStep()">Précédent</button>
+  <button type="button" onclick="nextStep()">Suivant</button>
+</div>
+<!----------------------- IMAGE OU MOMENT EFT ------------------------->
+<!------------------------------STEP 7------------------------------------->
+
+    <div class="step">
+  <h2>💭 Une image qui vous ressemble</h2>
+  <p>Choisissez parmi ces images ce qui vous inspire le plus pour votre projet, ou décrivez la vôtre.</p>
+
+  <div class="choices-img-masonry">
+  <div class="choice choice-photo" data-label="souffle léger" onclick="selectChoice(this, 'image_inspiration')">
+    <img src="photos/legere.png" alt="Souffle léger">
+  </div>
+  <div class="choice choice-photo" data-label="onde d'eau" onclick="selectChoice(this, 'image_inspiration')">
+    <img src="photos/eau.png" alt="eau">
+  </div>
+  <div class="choice choice-photo" data-label="onde d'eau" onclick="selectChoice(this, 'image_inspiration')">
+    <img src="photos/feuille-boken.png" alt="eau">
+  </div>
+   <div class="choice choice-photo" data-label="onde d'eau" onclick="selectChoice(this, 'image_inspiration')">
+    <img src="photos/nuit-etoile.png" alt="eau">
+  </div>
+   <div class="choice choice-photo" data-label="onde d'eau" onclick="selectChoice(this, 'image_inspiration')">
+    <img src="photos/soleil-dore.png" alt="eau">
+  </div>
+  <!-- etc. -->
+</div>
+
+
+  <input name="image_inspiration" id="image_inspiration" placeholder="ou décrivez votre propre image ou symbole…">
+
+  <button type="button" onclick="prevStep()">Précédent</button>
+  <button type="button" onclick="nextStep()">Suivant</button>
+</div>
+
+
+<!----------------------- MOTS ESSENTIELS ------------------------->
+<!------------------------------STEP 8------------------------------------->
+
+        <div class="step">
+          <h2>🔑 Mots essentiels</h2>
+          <textarea name="mots_essentiels" placeholder="Ex: toucher, apaiser, harmoniser..."></textarea>
+          <button type="button" onclick="prevStep()">Précédent</button>
+          <button type="button" onclick="showPrintable()">Afficher le récapitulatif</button>
+        </div>
+
+<!----------------------- RÉCAPITULATIF ------------------------->
+<!------------------------------STEP 9------------------------------------->
+
+        <div class="step" id="recap">
+          <h2>📋 Récapitulatif</h2>
+          <div id="r_paragraphe"></div>
+          <button type="button" onclick="window.print()">🖨️ Imprimer / Sauvegarder en PDF</button>
+          <button type="button" onclick="restartForm()">🔄 Recommencer</button>
+        </div>
+  </form>
+
+  <script>
+    const steps = document.querySelectorAll('.step');
+    const progress = document.getElementById('progress');
+    let current = 0;
+
+    function updateProgress() { progress.value = (current / (steps.length - 1)) * 100; }
+    function showStep(i) { steps.forEach(s => s.classList.remove('active')); steps[i].classList.add('active'); current = i; updateProgress(); }
+    function nextStep() { if (current < steps.length - 1) showStep(current + 1); }
+    function prevStep() { if (current > 0) showStep(current - 1); }
+    function restartForm() { document.getElementById('namingForm').reset(); showStep(0); }
+    function toggleChoice(el) { el.classList.toggle('active'); }
+    function showPrintable() {
+      let recap = '';
+
+      // D’abord : récupérer tous les champs texte et textarea
+      document.querySelectorAll('textarea, input').forEach(el => {
+        recap += `<p><strong>${el.placeholder}</strong><br>${el.value || '…'}</p>`;
+      });
+
+      // Ensuite : compléter avec les choix actifs (icônes)
+      document.querySelectorAll('.choice.active').forEach(el => {
+        const label = el.getAttribute('data-label') || el.textContent;
+
+        // Trouver l’input associé (s’il existe)
+        const match = el.getAttribute('onclick') ? el.getAttribute('onclick').match(/'([^']+)'/) : null;
+        const targetInputId = match ? match[1] : null;
+
+        if (targetInputId) {
+          const inputEl = document.getElementById(targetInputId);
+          if (inputEl) {
+            // Met à jour la valeur de l’input si vide
+            if (!inputEl.value || inputEl.value === '…') {
+              inputEl.value = label;
+            }
+
+            // Remplace dans le récapitulatif si on avait mis « … »
+            recap = recap.replace(`>${inputEl.placeholder}</strong><br>…`, `>${inputEl.placeholder}</strong><br>${label}`);
+          }
+        } else {
+          // Si pas d’input associé, on l’ajoute à part
+          recap += `<p><strong>Choix :</strong> ${label}</p>`;
+        }
+      });
+
+      document.getElementById('r_paragraphe').innerHTML = recap;
+      showStep(steps.length - 1);
+    };
+
+
+    function addToTextarea(textareaId, text) {
+  const textarea = document.getElementById(textareaId);
+  if (!textarea.value.includes(text)) {
+    textarea.value += (textarea.value ? ', ' : '') + text;
+  }
+}
+
+
+
+    function selectChoice(el, targetInput) {
+      // Désactiver les autres dans le même groupe
+      el.parentElement.querySelectorAll('.choice').forEach(c => c.classList.remove('active'));
+
+      // Activer celui-ci
+      el.classList.add('active');
+
+      // Mettre à jour l’input texte caché ou visible
+      document.getElementById(targetInput).value = el.getAttribute('data-label');
+    }
+
+    function selectChoice(el, targetInput) {
+  el.classList.toggle('active');
+  const input = document.getElementById(targetInput);
+  const selected = Array.from(document.querySelectorAll('.choice.active'))
+                        .map(c => c.getAttribute('data-label'))
+                        .join(', ');
+  input.value = selected;
+}
+
+
+  </script>
+
+
+</body>
+
+</html>
